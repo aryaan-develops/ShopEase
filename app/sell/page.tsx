@@ -51,7 +51,7 @@ export default function SellPage() {
         <div className="container" style={{ padding: '8rem 0' }}>
             <div style={{ maxWidth: '600px', margin: '0 auto' }}>
                 <header style={{ marginBottom: '4rem', textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '3rem', fontWeight: 500, marginBottom: '1rem' }}>Vendor <span style={{ fontWeight: 300, italic: 'true' }}>Portal</span></h1>
+                    <h1 style={{ fontSize: '3rem', fontWeight: 500, marginBottom: '1rem' }}>Vendor <span style={{ fontWeight: 300, fontStyle: 'italic' }}>Portal</span></h1>
                     <p style={{ color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.8rem' }}>List your masterpiece</p>
                 </header>
 
