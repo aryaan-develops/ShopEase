@@ -1,6 +1,6 @@
 datasource db {
   provider = "mongodb"
-  url      = "mongodb://localhost:27017/ShopEase"
+  url      = env("DATABASE_URL")
 }
 
 
