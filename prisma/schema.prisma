@@ -1,0 +1,119 @@
+datasource db {
+  provider = "mongodb"
+  url      = "mongodb://localhost:27017/ShopEase"
+}
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String     @unique
+  password  String
+  products  Product[]  @relation("AdminManagedProducts")
+  vendors   Vendor[]   @relation("AdminManagedVendors")
+  customers Customer[] @relation("AdminManagedCustomers")
+  receipts  Receipt[]  @relation("AdminViewedReceipts")
+}
+
+model Vendor {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  vendor_name String
+  email       String    @unique
+  phone_no    String?
+  city        String?
+  zip_code    String?
+  state       String?
+  country     String?
+  admin_id    String    @db.ObjectId
+  admin       Admin     @relation("AdminManagedVendors", fields: [admin_id], references: [id])
+  products    Product[]
+}
+
+model Customer {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String    @unique
+  phone_no String?
+  password String
+  address  String?
+  admin_id String?   @db.ObjectId
+  admin    Admin?    @relation("AdminManagedCustomers", fields: [admin_id], references: [id])
+  orders   Order[]
+}
+
+model Product {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  description    String?
+  price          Float
+  stock_quantity Int
+  product_image  String?
+  vendor_id      String      @db.ObjectId
+  vendor         Vendor      @relation(fields: [vendor_id], references: [id])
+  admin_id       String?     @db.ObjectId
+  admin          Admin?      @relation("AdminManagedProducts", fields: [admin_id], references: [id])
+  orderItems     OrderItem[]
+}
+
+model Order {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  order_date   DateTime    @default(now())
+  order_status String      @default("PENDING")
+  order_amount Float
+  customer_id  String      @db.ObjectId
+  customer     Customer    @relation(fields: [customer_id], references: [id])
+  orderItems   OrderItem[]
+  bill         Bill?
+}
+
+model OrderItem {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  order_id   String  @db.ObjectId
+  order      Order   @relation(fields: [order_id], references: [id])
+  product_id String  @db.ObjectId
+  product    Product @relation(fields: [product_id], references: [id])
+  quantity   Int
+  price      Float
+}
+
+model Bill {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  bill_date       DateTime @default(now())
+  tax_amount      Float
+  discount_amount Float
+  shipping_charge Float
+  total_amount    Float
+  payment_method  String
+  bill_status     String   @default("UNPAID")
+  order_id        String   @unique @db.ObjectId
+  order           Order    @relation(fields: [order_id], references: [id])
+  payment         Payment?
+}
+
+model Payment {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  payment_date   DateTime @default(now())
+  amount         Float
+  card_no        String?
+  cvv            String?
+  expiry_date    String?
+  payment_method String
+  transaction_id String   @unique
+  payment_status String   @default("PENDING")
+  bill_id        String   @unique @db.ObjectId
+  bill           Bill     @relation(fields: [bill_id], references: [id])
+  receipt        Receipt?
+}
+
+model Receipt {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  receipt_date DateTime @default(now())
+  payment_id   String   @unique @db.ObjectId
+  payment      Payment  @relation(fields: [payment_id], references: [id])
+  admin_id     String?  @db.ObjectId
+  admin        Admin?   @relation("AdminViewedReceipts", fields: [admin_id], references: [id])
+}
