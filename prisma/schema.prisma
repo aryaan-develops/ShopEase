@@ -13,6 +13,7 @@ model Admin {
   name      String
   email     String     @unique
   password  String
+  role      String     @default("ADMIN")
   products  Product[]  @relation("AdminManagedProducts")
   vendors   Vendor[]   @relation("AdminManagedVendors")
   customers Customer[] @relation("AdminManagedCustomers")
@@ -23,6 +24,8 @@ model Vendor {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   vendor_name String
   email       String    @unique
+  password    String?
+  role        String    @default("VENDOR")
   phone_no    String?
   city        String?
   zip_code    String?
@@ -37,12 +40,14 @@ model Customer {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String
   email    String    @unique
-  phone_no String?
   password String
+  role     String    @default("CUSTOMER")
+  phone_no String?
   address  String?
   admin_id String?   @db.ObjectId
   admin    Admin?    @relation("AdminManagedCustomers", fields: [admin_id], references: [id])
   orders   Order[]
+  reviews  Review[]
 }
 
 model Product {
@@ -57,6 +62,18 @@ model Product {
   admin_id       String?     @db.ObjectId
   admin          Admin?      @relation("AdminManagedProducts", fields: [admin_id], references: [id])
   orderItems     OrderItem[]
+  reviews        Review[]
+}
+
+model Review {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating      Int
+  comment     String
+  date        DateTime @default(now())
+  product_id  String   @db.ObjectId
+  product     Product  @relation(fields: [product_id], references: [id])
+  customer_id String   @db.ObjectId
+  customer    Customer @relation(fields: [customer_id], references: [id])
 }
 
 model Order {

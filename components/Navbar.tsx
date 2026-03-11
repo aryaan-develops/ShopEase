@@ -2,13 +2,15 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ShoppingBag, User, Search, Heart, ChevronDown } from 'lucide-react'
+import { ShoppingBag, User, Search, Heart, ChevronDown, LogOut, Menu, X } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useSession, signOut } from 'next-auth/react'
 
 export default function Navbar() {
     const totalItems = useCartStore((state) => state.totalItems())
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
+    const { data: session } = useSession()
 
     return (
         <nav className="navbar" style={{ padding: '0 1.5rem' }}>
@@ -19,18 +21,14 @@ export default function Navbar() {
                     {[
                         { name: 'Home', path: '/' },
                         { name: 'Shop', path: '/products' },
-                        { name: 'Collections', path: '/products' },
-                        { name: 'Journal', path: '/blog' }
+                        { name: 'Sell', path: '/sell' },
                     ].map((item) => (
                         <motion.div key={item.name} whileHover={{ y: -2 }}>
                             <Link href={item.path} style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit' }}>
-                                {item.name} {item.name !== 'Journal' && <ChevronDown size={12} />}
+                                {item.name}
                             </Link>
                         </motion.div>
                     ))}
-                    <motion.div whileHover={{ y: -2 }}>
-                        <Link href="/contact" style={{ color: 'inherit' }}>Contact</Link>
-                    </motion.div>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -39,9 +37,7 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     style={{ display: 'block', background: 'none', border: 'none', cursor: 'pointer', zIndex: 1100 }}
                 >
-                    <div style={{ width: '20px', height: '2px', background: '#1a1a1a', margin: '4px 0', transition: '0.3s', transform: isMobileMenuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }}></div>
-                    <div style={{ width: '20px', height: '2px', background: '#1a1a1a', margin: '4px 0', opacity: isMobileMenuOpen ? 0 : 1 }}></div>
-                    <div style={{ width: '20px', height: '2px', background: '#1a1a1a', margin: '4px 0', transition: '0.3s', transform: isMobileMenuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }}></div>
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
 
                 {/* Center: Logo */}
@@ -51,15 +47,27 @@ export default function Navbar() {
 
                 {/* Right Side: Icons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.8rem, 2vw, 1.5rem)' }}>
-                    <motion.div whileHover={{ scale: 1.1 }} className="icon-hide-mobile">
-                        <Link href="/login" title="Login / Signup" style={{ color: 'inherit' }}><User size={18} /></Link>
-                    </motion.div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {session ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 600 }} className="icon-hide-mobile">
+                                    {session.user?.name}
+                                </span>
+                                <button onClick={() => signOut()} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                    <LogOut size={18} />
+                                </button>
+                            </div>
+                        ) : (
+                            <motion.div whileHover={{ scale: 1.1 }}>
+                                <Link href="/login" title="Login / Signup" style={{ color: 'inherit' }}><User size={18} /></Link>
+                            </motion.div>
+                        )}
+                    </div>
+
                     <motion.div whileHover={{ scale: 1.1 }}>
                         <Search size={18} style={{ cursor: 'pointer' }} />
                     </motion.div>
-                    <motion.div whileHover={{ scale: 1.1 }} className="icon-hide-mobile">
-                        <Heart size={18} style={{ cursor: 'pointer' }} />
-                    </motion.div>
+
                     <motion.div whileHover={{ scale: 1.1 }}>
                         <Link href="/cart" style={{ position: 'relative', color: 'inherit' }}>
                             <ShoppingBag size={18} />
@@ -88,46 +96,49 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{
-                        position: 'fixed',
-                        top: '90px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '90%',
-                        background: 'rgba(255,255,255,0.95)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '24px',
-                        padding: '2rem',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                        zIndex: 999,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1.5rem',
-                        textAlign: 'center'
-                    }}
-                >
-                    {[
-                        { name: 'Home', path: '/' },
-                        { name: 'Shop', path: '/products' },
-                        { name: 'Collections', path: '/products' },
-                        { name: 'Journal', path: '/blog' },
-                        { name: 'Contact', path: '/contact' }
-                    ].map((item) => (
-                        <Link
-                            key={item.name}
-                            href={item.path}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            style={{ fontSize: '1.2rem', fontWeight: 500, color: '#1a1a1a', textDecoration: 'none' }}
-                        >
-                            {item.name}
-                        </Link>
-                    ))}
-                </motion.div>
-            )}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        style={{
+                            position: 'fixed',
+                            top: '90px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '95%',
+                            background: 'rgba(255,255,255,0.98)',
+                            backdropFilter: 'blur(20px)',
+                            borderRadius: '24px',
+                            padding: '2rem',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                            zIndex: 999,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem',
+                            textAlign: 'center',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {[
+                            { name: 'Home', path: '/' },
+                            { name: 'Shop', path: '/products' },
+                            { name: 'Sell', path: '/sell' },
+                            { name: 'Cart', path: '/cart' }
+                        ].map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.path}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                style={{ fontSize: '1.2rem', fontWeight: 500, color: '#1a1a1a', textDecoration: 'none' }}
+                            >
+                                {item.name}
+                            </Link>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <style jsx>{`
               @media (min-width: 1024px) {

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { ShoppingBag, Star } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 
@@ -66,13 +67,15 @@ export default function ProductsPage() {
                             className="product-card"
                         >
                             <div className="product-image-wrapper">
-                                {product.product_image ? (
-                                    <img src={product.product_image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : (
-                                    <div style={{ width: '100%', height: '100%', background: '#ebebeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <ShoppingBag size={40} style={{ opacity: 0.1 }} />
-                                    </div>
-                                )}
+                                <Link href={`/products/${product.id}`} style={{ display: 'block', height: '100%', width: '100%' }}>
+                                    {product.product_image ? (
+                                        <img src={product.product_image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', background: '#ebebeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <ShoppingBag size={40} style={{ opacity: 0.1 }} />
+                                        </div>
+                                    )}
+                                </Link>
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '1rem',
@@ -82,13 +85,16 @@ export default function ProductsPage() {
                                     transition: 'opacity 0.3s ease'
                                 }} className="hover-action">
                                     <button
-                                        onClick={() => addItem({
-                                            id: product.id,
-                                            name: product.name,
-                                            price: product.price,
-                                            quantity: 1,
-                                            image: product.product_image
-                                        })}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            addItem({
+                                                id: product.id,
+                                                name: product.name,
+                                                price: product.price,
+                                                quantity: 1,
+                                                image: product.product_image
+                                            });
+                                        }}
                                         className="btn btn-primary"
                                         style={{ width: '100%', padding: '0.8rem' }}
                                     >
@@ -98,11 +104,20 @@ export default function ProductsPage() {
                             </div>
 
                             <span className="product-category">{product.category || 'COLLECTION'}</span>
-                            <h3 className="product-name" style={{ height: '2.5rem', overflow: 'hidden' }}>{product.name}</h3>
+                            <Link href={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <h3 className="product-name" style={{ height: '2.5rem', overflow: 'hidden' }}>{product.name}</h3>
+                            </Link>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <div style={{ display: 'flex', color: '#ffc107' }}>
+                                    {[...Array(5)].map((_, i) => <Star key={i} size={10} fill={i < 4 ? "currentColor" : "none"} />)}
+                                </div>
+                                <span style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>(12)</span>
+                            </div>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span className="product-price">${product.price.toFixed(2)}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>by {product.vendor.vendor_name}</span>
+                                <span className="product-price">${(product.price || 0).toFixed(2)}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>by {product.vendor?.vendor_name}</span>
                             </div>
                         </motion.div>
                     ))}

@@ -1,12 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Package, DollarSign, List, Image as ImageIcon } from 'lucide-react'
 
+import { useSession } from 'next-auth/react'
+
 export default function SellPage() {
     const router = useRouter()
+    const { data: session, status } = useSession()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         name: '',
@@ -14,8 +17,14 @@ export default function SellPage() {
         price: '',
         stock_quantity: '',
         product_image: '',
-        vendor_id: ''
     })
+
+    useEffect(() => {
+        if (status === 'unauthenticated' || (session?.user as any)?.role !== 'VENDOR') {
+            // Uncomment this to enforce vendor check
+            // router.push('/login?error=vendor_only')
+        }
+    }, [status, session])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -24,7 +33,7 @@ export default function SellPage() {
         try {
             const dataToSubmit = {
                 ...formData,
-                vendor_id: formData.vendor_id || "65e8a4b8e4b0a1a2b3c4d5e6"
+                vendor_id: (session?.user as any)?.id || "65e8a4b8e4b0a1a2b3c4d5e6" // Fallback for dev
             }
 
             const res = await fetch('/api/products', {

@@ -1,60 +1,53 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star, ShoppingBag, ArrowRight, ShieldCheck, Truck, RefreshCw, Instagram } from 'lucide-react'
+import { useCartStore } from '@/store/cartStore'
 
-const CATEGORIES = ['WOMEN', 'MEN', 'SHOES', 'BAGS', 'ACCESSORIES']
+const CATEGORIES = ['WOMEN', 'MEN', 'ACCESSORIES', 'LIFESTYLE']
 
 const HERO_SLIDES = [
   {
     id: 1,
-    title: "Refined Tailoring",
-    subtitle: "URBAN EDGE",
-    description: "Jackets for the Modern Man",
-    bg: "#75aadb",
+    title: "The Silver Collection",
+    subtitle: "LIMITED EDITION",
+    description: "Architectural Lines in Silk and Silver",
+    bg: "#e0e5ec",
     image: "/hero-1.png",
-    color: "#fff"
+    color: "#1a1a1a"
   },
   {
     id: 2,
-    title: "Timeless Grace",
-    subtitle: "ETHEREAL ELEGANCE",
-    description: "Couture in Every Silhouette",
-    bg: "#e3dad1",
+    title: "Ethereal Grace",
+    subtitle: "COUTURE 2026",
+    description: "Flowing Silhouettes for the Modern Muse",
+    bg: "#d2b48c",
     image: "/hero-2.png",
-    color: "#4a4a4a"
-  },
-  {
-    id: 3,
-    title: "Urban Strides",
-    subtitle: "CITY CHIC",
-    description: "Footwear for Active Lifestyle",
-    bg: "#ced4da",
-    image: "/hero-male.png",
-    color: "#1a1a1a"
+    color: "#fff"
   }
-]
-
-const PRODUCTS = [
-  { id: 1, name: 'adidas X Pop Polo shirt, navy / blue', category: 'JACKETS', price: 85.00, image: '/product-jacket.png' },
-  { id: 2, name: 'adidas X Pop TRX Vintage, navy / white', category: 'SHOES', price: 69.99, image: '/product-shirt.png' },
-  { id: 3, name: 'adidas X Pop Beckenhauer Track Jacket', category: 'JACKETS', price: 120.00, rating: 5, image: '/product-jacket.png' },
-  { id: 4, name: 'adidas X Pop Classic t-shirt, grey / navy', category: 'SHIRTS', price: 120.00, image: '/product-shirt.png' },
-  { id: 5, name: 'adidas X Pop SL Cap, navy / white', category: 'HATS', price: 55.00, image: '/product-cap.png' },
-  { id: 6, name: 'Butter Yard Pullover Hood, denim', category: 'JACKETS', price: 120.00, image: '/product-jacket.png' },
-  { id: 7, name: 'Parra Rug Pull t-shirt, white', category: 'SHIRTS', price: 60.00, image: '/product-shirt.png' },
-  { id: 8, name: 'Carhartt L/S DeadKebab Knock Knock Sweet', category: 'JACKETS', price: 135.00, image: '/product-jacket.png' },
 ]
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = React.useState(0)
+  const [products, setProducts] = React.useState<any[]>([])
+  const { scrollY } = useScroll()
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0])
+  const addItem = useCartStore((state) => state.addItem)
 
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)
-    }, 5000)
+    }, 6000)
+
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setProducts(data.slice(0, 4))
+      })
+      .catch(err => console.error(err))
+
     return () => clearInterval(timer)
   }, [])
 
@@ -63,215 +56,203 @@ export default function Home() {
   return (
     <div style={{ background: '#fff' }}>
       {/* Hero Section */}
-      <section style={{
+      <motion.section style={{
         position: 'relative',
-        minHeight: '600px',
         height: 'calc(100vh - 40px)',
+        minHeight: '700px',
         backgroundColor: slide.bg,
         overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        transition: 'background-color 0.8s ease'
+        transition: 'background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: heroOpacity
       }}>
-        <div className="hero-container container" style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%', gap: '2rem', padding: '120px 1rem 60px' }}>
+        <div className="container" style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', width: '100%', gap: '2rem', alignItems: 'center' }}>
 
-          <motion.div
-            key={`content-${currentSlide}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            style={{ color: slide.color, textAlign: 'center', zIndex: 5 }}
-            className="hero-content"
-          >
-            <span style={{ fontSize: '0.75rem', letterSpacing: '0.2em', fontWeight: 600 }}>{slide.subtitle}</span>
-            <h1 className="hero-title" style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', fontWeight: 700, margin: '1rem 0 1.5rem', lineHeight: 1.1 }}>
-              {slide.description}
-            </h1>
-            <Link href="/products">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn btn-primary"
-                style={{
-                  background: slide.color === '#fff' ? '#fff' : '#1a1a1a',
-                  color: slide.color === '#fff' ? '#1a1a1a' : '#fff',
-                  borderRadius: '4px',
-                  padding: '1rem 2.5rem'
-                }}
-              >
-                Discovery Now
-              </motion.button>
-            </Link>
-          </motion.div>
+            <motion.div
+              key={`content-${currentSlide}`}
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              style={{ color: slide.color, gridColumn: 'span 6', zIndex: 10 }}
+              className="hero-text-container"
+            >
+              <span style={{ fontSize: '0.7rem', letterSpacing: '0.4em', fontWeight: 700, textTransform: 'uppercase' }}>{slide.subtitle}</span>
+              <h1 style={{ fontSize: 'clamp(3rem, 10vw, 6rem)', fontWeight: 300, margin: '1.5rem 0', lineHeight: 1, letterSpacing: '-0.03em' }}>
+                {slide.description}
+              </h1>
+              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '3rem' }}>
+                <Link href="/products">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    className="btn btn-primary"
+                    style={{ background: slide.color, color: slide.color === '#fff' ? '#1a1a1a' : '#fff', padding: '1.25rem 3rem' }}
+                  >
+                    Discovery Now
+                  </motion.button>
+                </Link>
+                <Link href="/collections">
+                  <button className="btn btn-outline" style={{ borderColor: slide.color, color: slide.color, border: '1px solid' }}>
+                    View Lookbook
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
 
-          {/* Model Images */}
-          <div className="hero-image-wrapper" style={{ height: '50vh', zIndex: 1 }}>
-            <motion.img
-              key={`image-${currentSlide}`}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              src={slide.image}
-              alt={slide.title}
-              style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
-            />
+            <div style={{ gridColumn: 'span 6', position: 'relative', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
+              <motion.img
+                key={`image-${currentSlide}`}
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                src={slide.image}
+                alt={slide.title}
+                style={{ height: '90%', width: 'auto', objectFit: 'contain', maxHeight: '800px' }}
+                className="hero-image"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Navigation Arrows - Hidden on small mobile */}
-        <div className="nav-arrows" style={{ position: 'absolute', width: '100%', padding: '0 2rem', display: 'flex', justifyContent: 'space-between', zIndex: 20 }}>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 'clamp(40px, 8vw, 60px)', height: 'clamp(40px, 8vw, 60px)', color: slide.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
-            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 'clamp(40px, 8vw, 60px)', height: 'clamp(40px, 8vw, 60px)', color: slide.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-
-        {/* Slide Indicators */}
-        <div style={{ position: 'absolute', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.75rem', zIndex: 20 }}>
+        {/* Slide Controls */}
+        <div style={{ position: 'absolute', bottom: '4rem', right: '4rem', display: 'flex', gap: '1rem', zIndex: 100 }}>
           {HERO_SLIDES.map((_, i) => (
             <div
               key={i}
               onClick={() => setCurrentSlide(i)}
               style={{
-                width: i === currentSlide ? '30px' : '8px',
-                height: '3px',
+                width: '40px',
+                height: '2px',
                 background: slide.color,
-                borderRadius: '2px',
-                opacity: i === currentSlide ? 1 : 0.3,
+                opacity: i === currentSlide ? 1 : 0.2,
                 cursor: 'pointer',
-                transition: 'all 0.4s ease'
+                transition: '0.4s'
               }}
             />
           ))}
         </div>
+      </motion.section>
 
-        <style jsx>{`
-          .hero-container { min-height: 100%; }
-          .hero-image-wrapper { width: 100%; display: flex; justify-content: center; }
-          @media (min-width: 1024px) {
-            .hero-container { flex-direction: row !important; justify-content: space-between !important; text-align: left !important; padding: 0 2rem !important; }
-            .hero-content { text-align: left !important; max-width: 50%; }
-            .hero-image-wrapper { width: 50%; height: 700px !important; }
-            .hero-title { margin-left: 0 !important; }
-          }
-          @media (max-width: 640px) {
-            .nav-arrows { display: none !important; }
-            .hero-title { font-size: 2.2rem !important; }
-          }
-        `}</style>
+      {/* Feature Section */}
+      <section style={{ padding: '6rem 0', borderBottom: '1px solid #f0f0f0' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '3rem' }}>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <Truck size={24} strokeWidth={1.5} />
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>Complimentary Shipping</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>On all orders above $500</p>
+          </div>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <ShieldCheck size={24} strokeWidth={1.5} />
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>Authenticity Guaranteed</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Directly from global designers</p>
+          </div>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <RefreshCw size={24} strokeWidth={1.5} />
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>Artisan Returns</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>30-day effortless return policy</p>
+          </div>
+        </div>
       </section>
 
-      {/* New Arrivals Section */}
-      <section style={{ padding: 'clamp(3rem, 10vw, 6rem) 0' }}>
+      {/* Curated Collection */}
+      <section style={{ padding: '8rem 0' }}>
         <div className="container">
-          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '2rem', fontWeight: 500 }}>New Arrivals</h2>
-
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(1rem, 3vw, 3rem)', marginBottom: '3rem', flexWrap: 'wrap' }}>
-            {CATEGORIES.map((cat, i) => (
-              <button
-                key={cat}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '0.7rem',
-                  fontWeight: i === 0 ? 700 : 500,
-                  letterSpacing: '0.1em',
-                  cursor: 'pointer',
-                  borderBottom: i === 0 ? '2px solid #1a1a1a' : 'none',
-                  paddingBottom: '0.5rem',
-                  color: i === 0 ? '#1a1a1a' : '#717171'
-                }}
-              >
-                {cat}
-              </button>
-            ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
+            <div>
+              <span style={{ fontSize: '0.7rem', letterSpacing: '0.2em', color: 'var(--muted)' }}>SPRING 2026</span>
+              <h2 style={{ fontSize: '3rem', fontWeight: 300, marginTop: '0.5rem' }}>Curated Selections</h2>
+            </div>
+            <Link href="/products" style={{ fontSize: '0.8rem', fontWeight: 700, borderBottom: '1px solid #1a1a1a', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              EXPLORE ALL <ArrowRight size={14} />
+            </Link>
           </div>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '2rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '4rem 2rem'
           }}>
-            {PRODUCTS.map((product) => (
-              <div key={product.id} className="product-card">
-                <div className="product-image-wrapper" style={{ background: '#f9f9f9', overflow: 'hidden' }}>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                    className="hover-zoom"
-                  />
+            {products.map((product) => (
+              <motion.div
+                key={product.id}
+                whileHover={{ y: -10 }}
+                className="product-card"
+              >
+                <div className="product-image-wrapper" style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.02)', position: 'relative' }}>
+                  <Link href={`/products/${product.id}`}>
+                    <img
+                      src={product.product_image || '/placeholder.png'}
+                      alt={product.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '4/5' }}
+                    />
+                  </Link>
+                  <div className="hover-action" style={{ position: 'absolute', bottom: '1rem', left: '1rem', right: '1rem', opacity: 0, transition: '0.3s' }}>
+                    <button
+                      onClick={() => addItem({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.product_image,
+                        quantity: 1
+                      })}
+                      className="btn btn-primary"
+                      style={{ width: '100%', fontSize: '0.7rem' }}
+                    >
+                      Quick Add
+                    </button>
+                  </div>
                 </div>
-                <span className="product-category">{product.category}</span>
-                <h3 className="product-name" style={{ fontSize: '0.9rem' }}>{product.name}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="product-price">${product.price.toFixed(2)}</span>
-                  {product.rating && (
-                    <div style={{ display: 'flex', gap: '2px', color: '#ffc107', marginLeft: 'auto' }}>
-                      {[...Array(product.rating)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
-                    </div>
-                  )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1.5rem' }}>
+                  <div>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--muted)', letterSpacing: '0.1em' }}>{product.category || 'COLLECTION'}</span>
+                    <Link href={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 400, margin: '0.25rem 0' }}>{product.name}</h3>
+                    </Link>
+                    <p style={{ fontWeight: 600 }}>${(product.price || 0).toFixed(2)}</p>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Promotional Grid */}
-      <section style={{ padding: '0 0 clamp(3rem, 10vw, 6rem)' }}>
+      {/* Philosophy Section */}
+      <section style={{ padding: '10rem 0', background: '#fafafa' }}>
         <div className="container">
-          <div className="res-promo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-
-            {/* Left Big Promo */}
-            <div className="promo-item" style={{ background: '#f5f5f5', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', height: '600px' }}>
-              <div className="promo-content">
-                <span style={{ fontSize: '0.7rem', letterSpacing: '0.1em', color: '#717171' }}>ETHEREAL ELEGANCE</span>
-                <h2 style={{ fontSize: '1.8rem', margin: '1rem 0 1.5rem' }}>Where Dreams <br /> Meet Couture</h2>
-                <button className="btn btn-outline" style={{ width: 'fit-content' }}>Shop Now</button>
-              </div>
-              <img src="/promo-woman.png" alt="Promo" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8rem', alignItems: 'center' }}>
+            <img src="/promo-woman.png" alt="Philosophy" style={{ width: '100%', height: '700px', objectFit: 'cover' }} />
+            <div style={{ maxWidth: '500px' }}>
+              <span style={{ fontSize: '0.7rem', letterSpacing: '0.2em', opacity: 0.5 }}>PHILOSOPHY</span>
+              <h2 style={{ fontSize: '3.5rem', fontWeight: 300, margin: '2rem 0', lineHeight: 1.1 }}>Crafted for the conscious soul.</h2>
+              <p style={{ fontSize: '1.1rem', lineHeight: 1.8, color: '#555', marginBottom: '3rem' }}>
+                We believe in slow fashion. Every piece in our collection is selected for its timeless appeal and exceptional craftsmanship, ensuring it remains a staple in your wardrobe for decades, not seasons.
+              </p>
+              <button className="btn btn-primary">Read Our Journal</button>
             </div>
-
-            {/* Right Side: Split Promos */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div className="promo-item" style={{ background: '#f5f5f5', position: 'relative', overflow: 'hidden', height: '290px' }}>
-                <div className="promo-content">
-                  <span style={{ fontSize: '0.7rem', letterSpacing: '0.1em', color: '#717171' }}>RADIANT REVERIE</span>
-                  <h2 style={{ fontSize: '1.5rem', margin: '0.5rem 0 1.5rem' }}>Enchanting Styles</h2>
-                  <button className="btn btn-outline" style={{ width: 'fit-content' }}>Shop Now</button>
-                </div>
-                <img src="/promo-woman.png" alt="Radiant Reverie" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, opacity: 0.7 }} />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', height: '290px' }}>
-                <div className="promo-item" style={{ background: '#f5f5f5', position: 'relative', overflow: 'hidden' }}>
-                  <img src="/shoes-promo.png" alt="Shoes" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
-                  <div className="promo-content" style={{ top: '1.5rem', left: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', margin: '0.5rem 0' }}>City Chic</h3>
-                  </div>
-                </div>
-                <div className="promo-item" style={{ background: '#4d6980', color: '#fff', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-                  <img src="/bags-promo.png" alt="Bags" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, opacity: 0.4 }} />
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <h2 style={{ fontSize: '2.5rem', margin: '0.5rem 0' }}>50%</h2>
-                    <span style={{ fontSize: '0.6rem', textTransform: 'uppercase' }}>OFF NOW</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
+
+      {/* Newsletter */}
+      <section style={{ padding: '8rem 0', textAlign: 'center' }}>
+        <div className="container" style={{ maxWidth: '800px' }}>
+          <Instagram size={32} style={{ marginBottom: '2rem', opacity: 0.3 }} />
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 300, marginBottom: '1.5rem' }}>Join the Inner Circle</h2>
+          <p style={{ color: 'var(--muted)', marginBottom: '3rem' }}>Be the first to experience our seasonal drops and exclusive artistic collaborations.</p>
+          <form style={{ display: 'flex', gap: '1rem', maxWidth: '500px', margin: '0 auto' }}>
+            <input type="email" placeholder="Your Email Address" style={{ flex: 1, padding: '1.25rem', border: '1px solid #1a1a1a', outline: 'none' }} />
+            <button className="btn btn-primary" style={{ padding: '0 2rem' }}>Subscribe</button>
+          </form>
+        </div>
+      </section>
+
+      <style jsx>{`
+        @media (max-width: 1024px) {
+          .hero-text-container { grid-column: span 12 !important; text-align: center; }
+          .hero-image { display: none; }
+          .hero-text-container div { justify-content: center; }
+        }
+      `}</style>
     </div>
   )
 }
